@@ -1,16 +1,22 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from .views import ProjectViewSet, ProjectDetailViewSet, TaskViewSet
+from rest_framework.routers import DefaultRouter
+
 
 router = DefaultRouter()
 router.register(r"projects", ProjectViewSet, basename="project")
-router.register(
-    r"projects/(?P<slug>[^/.]+)/detail", ProjectDetailViewSet, basename="project-detail"
-)
-router.register(
-    r"projects/(?P<slug>[^/.]+)/tasks", TaskViewSet, basename="project-tasks"
-)
 
 urlpatterns = [
-    path("", include(router.urls)),
+    path(
+        "projects/<slug:slug>/",
+        ProjectDetailViewSet.as_view({"get": "retrieve"}),
+        name="project-detail",
+    ),
+    path(
+        "projects/<slug:slug>/tasks",
+        TaskViewSet.as_view({"get": "list"}),
+        name="project-tasks",
+    ),
 ]
+
+urlpatterns += router.urls

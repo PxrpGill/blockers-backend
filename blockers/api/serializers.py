@@ -22,7 +22,7 @@ class ProjectReleaseSerializer(serializers.ModelSerializer):
         model = models.ProjectRelease
         fields = ("id", "name", "comment", "released")
 
-    def get_release_date(self, obj):
+    def get_released(self, obj):
         if obj.released_at:
             return obj.released_at.strftime("%Y-%m-%d")
         return None
@@ -35,10 +35,10 @@ class ProjectSectionSerializer(serializers.ModelSerializer):
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
-    statuses = StatusSerializer(many=True)
-    releases = ProjectReleaseSerializer(many=True)
-    responsibles = ResponsibleSerializer(many=True)
-    sections = ProjectSectionSerializer(many=True)
+    statuses = serializers.SerializerMethodField()
+    releases = serializers.SerializerMethodField()
+    responsibles = serializers.SerializerMethodField()
+    sections = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
 
     class Meta:
@@ -52,6 +52,22 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "responsibles",
             "sections",
         )
+
+    def get_sections(self, obj):
+        sections = models.ProjectSection.objects.filter(project=obj)
+        return ProjectSectionSerializer(sections, many=True).data
+
+    def get_responsibles(self, obj):
+        responsibles = models.User.objects.all()
+        return ResponsibleSerializer(responsibles, many=True).data
+
+    def get_releases(self, obj):
+        releases = models.ProjectRelease.objects.all()
+        return ProjectReleaseSerializer(releases, many=True).data
+
+    def get_statuses(self, obj):
+        statuses = models.Status.objects.all()
+        return StatusSerializer(statuses, many=True).data
 
     def get_status(self, obj):
         status = obj.status
@@ -81,10 +97,10 @@ class ProjectsSerializer(serializers.ModelSerializer):
         status = obj.status
         color = ""
 
-        if status == "New":
+        if status == "new":
             color = "#f7f7f7"
 
-        elif status == "Develop":
+        elif status == "develop":
             color = "#65E6AC"
 
         else:
@@ -128,12 +144,12 @@ class EventSerializer(serializers.ModelSerializer):
             "endedAt",
         )
 
-    def get_started_at_date(self, obj):
+    def get_startedAt(self, obj):
         if obj.started_at:
             return obj.started_at.strftime("%Y-%m-%d")
         return None
 
-    def get_ended_at_date(self, obj):
+    def get_endedAt(self, obj):
         if obj.ended_at:
             return obj.ended_at.strftime("%Y-%m-%d")
         return None
