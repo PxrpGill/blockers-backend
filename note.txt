@@ -1,0 +1,110 @@
+Table project_task_event {
+    id uuid [pk]
+    task_id uuid [ref: > project-task.id]
+    status_id uuid [ref > status.id, note 'Статус блокировки релиза']
+    responsible_id uuid [ref: > user.id, note 'Ответственный за выполнение задачи']
+    risk varchar(32) [note: 'Enum: done(Готово), have_blocker(есть блокеры), no_risk(нет рисков)']
+    type varchar(32) [note: 'Enum: done(выполнено), transfer(перенос)']
+    comment text [default: null]
+    started_at datetime [default: null, note: 'Дата начала']
+    ended_at datetime [default: null, note 'дата окончания']
+    created_by uuid [ref: > user.id]
+    updated_by uuid [ref: > user.id]
+    created_at datetime [default: 'CurrentDateTime']
+    updated_at datetime [default: null]
+    deleted_at datetime [default: null]
+}
+
+Table project_task {
+    id uuid [pk]
+    is_active bool [default: true]
+    section_id uuid [ref: > project_section.id]
+    release_id uuid [ref: > project_release.id]
+    name varchar(255) [not null]
+    comment text [default: null]
+    created_by uuid [ref: > user.id]
+    updated_by uuid [ref: > user.id]
+    created_at datetime [default: 'CutrrentDateTime']
+    updated_at datetime [default: null]
+    deleted_at datetime [default: null]
+}
+
+Table status {
+    id uuid [pk]
+    name varchar(255) [not null]
+    color varchar(12) [not null]
+    created_by uuid [ref: > user.id]
+    updated_by uuid [ref: > user.id]
+    created_at datetime [default: 'CurrentDateTime']
+    updated_at datetime [default: null]
+    deleted_at datetime [default: null]
+}
+
+Table project_section {
+    id uuid [pk]
+    project_id uuid [ref: > project.id]
+    name varchar(255) [not null]
+    created_by uuid [ref: > user.id]
+    updated_by uuid [ref: > user.id]
+    created_at datetime [default: 'CurrentDateTime']
+    updated_at datetitme [default: null]
+}
+
+Table project_status {
+    project_id uuid [ref: > project.id]
+    status_id uuid [ref: > status.id]
+}
+
+Table project_release {
+    id uuid [pk]
+    name varchar(255) [not null, note: '']
+    comment varchar(512) [default: null, note: '']
+    released_at datetime [not null]
+    created_by uuid [ref: > user.id]
+    updated_by uuid [ref: > user.id]
+    created_at datetime [default: 'CurrentDateTime']
+    updated_at datetime [default: null]
+}
+
+Table project {
+    id uuid [pk]
+    status varchar(32) [note 'Enum: new, develop, released']
+    name varchar(255) [not null]
+    jira_id varchar(32) [default: null]
+    slug varchar(32) [unique]
+    release_id uuid [ref: > project_release.id]
+    released_at datetime [not null]
+    created_by uuid [ref: > user.id]
+    updated_by uuid [ref: > user.id]
+    created_at datetime [default: 'CurrentDateTime']
+    updated_at datetime [default: null]
+}
+
+Table user_project {
+    user_id uuid [ref: > user.id]
+    project_id uuid [ref: > project.id]
+}
+
+Table user_token {
+    id uuid [pk]
+    user_id uuid [ref: > user.id]
+    token varchar(64)
+    expired_at datetime
+    created_by uuid [default: null, ref: > user.id]
+    updated_by uuid [default: null, ref: > user.id]
+    created_at datetime [default: 'CurrentDateTime']
+    updated_at datetime [default: null]
+}
+
+Table user {
+    id uuid [pk]
+    email varchar(320) [default: null, unique]
+    full_name varchar(255) [not null]
+    team varchar(32) [not null, note: 'Команда пользователя']
+    role varchar(32) [default: 'role_user']
+    password varchar(255) [default: null]
+    created_by uuid [default: null, ref: > user.id]
+    updated_by uuid [default: null, ref: > user.id]
+    created_at datetime [default: 'CurrentDateTime']
+    updated_at datetime [default: null]
+}
