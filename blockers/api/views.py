@@ -4,6 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from .models import Project, ProjectTask, Status
 from .serializers import ProjectSerializer, ProjectTaskSerializer
+from rest_framework import status
+from rest_framework.exceptions import NotFound
 
 
 class ProjectPagination(PageNumberPagination):
@@ -21,7 +23,11 @@ class ProjectTaskViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     def list(self, request, *args, **kwargs):
         project_slug = kwargs.get("slug")
-        project = Project.objects.get(slug=project_slug)
+        try:
+            project = Project.objects.get(slug=project_slug)
+        except Project.DoesNotExist:
+            raise NotFound("Project not found")
+
         self.queryset = self.queryset.filter(section__project=project)
 
         # Apply filters
@@ -59,6 +65,7 @@ class ProjectTaskViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
 class ProjectViewSet(viewsets.ViewSet):
     pagination_class = ProjectPagination
+    lookup_field = 'slug'  # Указываем, что идентификатором является slug
 
     def list(self, request):
         status_name = request.query_params.get("status")
@@ -75,11 +82,14 @@ class ProjectViewSet(viewsets.ViewSet):
         return paginator.get_paginated_response(serializer.data)
 
     def retrieve(self, request, slug=None):
-        project = Project.objects.get(slug=slug)
+        try:
+            project = Project.objects.get(slug=slug)
+        except Project.DoesNotExist:
+            raise NotFound("Project not found")
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["get"], url_path="tasks")
     def tasks(self, request, slug=None):
         view = ProjectTaskViewSet.as_view({"get": "list"})
-        return view(request._request, slug=slug)
+        return view(request, slug=slug)

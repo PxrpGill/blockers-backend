@@ -15,6 +15,9 @@ class User(models.Model):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
 
+    def __str__(self) -> str:
+        return self.full_name
+
 
 class UserToken(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -27,6 +30,9 @@ class UserToken(models.Model):
     class Meta:
         verbose_name = "Токен пользователя"
         verbose_name_plural = "Токены пользователей"
+
+    def __str__(self) -> str:
+        return self.token
 
 
 class Project(models.Model):
@@ -44,6 +50,9 @@ class Project(models.Model):
         verbose_name = "Проект"
         verbose_name_plural = "Проекты"
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class ProjectRelease(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -58,6 +67,9 @@ class ProjectRelease(models.Model):
         verbose_name = "Релиз проекта"
         verbose_name_plural = "Релизы проекта"
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class ProjectSection(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -70,6 +82,9 @@ class ProjectSection(models.Model):
     class Meta:
         verbose_name = "Секция проекта"
         verbose_name_plural = "Секции проекта"
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Status(models.Model):
@@ -84,6 +99,9 @@ class Status(models.Model):
     class Meta:
         verbose_name = "Статус"
         verbose_name_plural = "Статусы"
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class ProjectStatus(models.Model):
@@ -103,7 +121,7 @@ class ProjectTask(models.Model):
     section = models.ForeignKey(ProjectSection, on_delete=models.CASCADE)
     status = models.ForeignKey(Status, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    сomment = models.TextField()
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)

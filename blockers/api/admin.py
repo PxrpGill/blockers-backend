@@ -26,7 +26,6 @@ class UserTokenAdmin(admin.ModelAdmin):
 class ProjectAdmin(admin.ModelAdmin):
     list_display = (
         "id", "name",
-        "description",
         "image", "slug",
         "release_at", "created_by",
         "created_at", "updated_at"
@@ -75,7 +74,7 @@ class ProjectStatusAdmin(admin.ModelAdmin):
 class ProjecTaskAdmin(admin.ModelAdmin):
     list_display = (
         "id", "section", "status",
-        "name", "description",
+        "name",
         "start_at", "end_at",
         "created_by", "created_at",
         "updated_at"
