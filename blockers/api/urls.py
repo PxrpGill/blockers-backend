@@ -14,7 +14,7 @@ urlpatterns = [
     ),
     path(
         "projects/<slug:slug>/tasks",
-        TaskViewSet.as_view({"get": "list"}),
+        TaskViewSet.as_view({"get": "retrieve"}),
         name="project-tasks",
     ),
 ]

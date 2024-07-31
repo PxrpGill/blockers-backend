@@ -3,7 +3,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django_filters import rest_framework as django_filters
 from rest_framework import status
-from .models import Project, ProjectTask
+from .models import Project, ProjectTask, ProjectSection
 from .serializers import ProjectsSerializer, ProjectDetailSerializer, TaskSerializer
 
 
@@ -94,7 +94,15 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     pagination_class = TaskPagination
     filter_backends = (django_filters.DjangoFilterBackend, filters.OrderingFilter)
+    
+    def get_queryset(self):
+        project_slug = self.kwargs.get("slug")
+        project = Project.objects.get(slug=project_slug)
+        project_sections = ProjectSection.objects.filter(project=project)
+        
+        
 
+    """
     def get_queryset(self):
         queryset = ProjectTask.objects.all()
         project_slug = self.kwargs.get("slug")
@@ -110,6 +118,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         if section_ids:
             queryset = queryset.filter(section__id__in=section_ids)
         return queryset
+    """
 
     def list(self, request, *args, **kwargs):
         page = self.paginate_queryset(self.get_queryset())
