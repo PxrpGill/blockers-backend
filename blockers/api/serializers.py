@@ -1,12 +1,16 @@
 from rest_framework import serializers
-
 from . import models
 
 
 class ResponsibleSerializer(serializers.ModelSerializer):
+    fullName = serializers.SerializerMethodField()
+
     class Meta:
         model = models.User
-        fields = ("id", "full_name", "team")
+        fields = ("id", "fullName", "team")
+
+    def get_fullName(self, obj):
+        return obj.full_name
 
 
 class StatusSerializer(serializers.ModelSerializer):
@@ -112,23 +116,23 @@ class ProjectsSerializer(serializers.ModelSerializer):
 class SectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProjectSection
-        fields = ("id",)
+        fields = ("id", "name")
 
 
 class ReleaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ProjectRelease
-        fields = ("id",)
+        fields = ("id", "name", "released_at")
 
 
 class EventResponsibleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.User
-        fields = ("id",)
+        fields = ("id", "full_name")
 
 
 class EventSerializer(serializers.ModelSerializer):
-    responsible = EventResponsibleSerializer()
+    responsible = serializers.UUIDField(source="responsible.id")
     startedAt = serializers.SerializerMethodField()
     endedAt = serializers.SerializerMethodField()
 
@@ -156,10 +160,30 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    section = SectionSerializer()
-    release = ReleaseSerializer()
-    status = StatusSerializer()
+    section = serializers.UUIDField(source="section.id")
+    release = serializers.UUIDField(source="release.id")
+    status = serializers.SerializerMethodField()
+    events = serializers.SerializerMethodField()
 
     class Meta:
         model = models.ProjectTask
-        fields = ("id", "name", "comment", "section", "release", "status")
+        fields = (
+            "id",
+            "name",
+            "comment",
+            "section",
+            "release",
+            "status",
+            "events",
+        )
+
+    def get_status(self, obj):
+        # Retrieve the latest event and get its status
+        latest_event = obj.projecttaskevent_set.order_by("-created_at").first()
+        if latest_event:
+            return StatusSerializer(latest_event.status).data
+        return None
+
+    def get_events(self, obj):
+        events = models.ProjectTaskEvent.objects.filter(task=obj)
+        return EventSerializer(events, many=True).data

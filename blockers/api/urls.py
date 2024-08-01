@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import ProjectViewSet, ProjectDetailViewSet, TaskViewSet
 from rest_framework.routers import DefaultRouter
 
@@ -13,8 +13,8 @@ urlpatterns = [
         name="project-detail",
     ),
     path(
-        "projects/<slug:slug>/tasks",
-        TaskViewSet.as_view({"get": "retrieve"}),
+        "projects/<slug:slug>/tasks/",
+        TaskViewSet.as_view({"get": "list"}),
         name="project-tasks",
     ),
 ]

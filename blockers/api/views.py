@@ -89,44 +89,39 @@ class TaskPagination(PageNumberPagination):
     page_size_query_param = "perPage"
     max_page_size = 100
 
+    def get_paginated_response_data(self, data):
+        return {
+            "page": self.page.number,
+            "perPage": self.page.paginator.per_page,
+            "count": self.page.paginator.count,
+            "tasks": data,
+        }
+
 
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
     pagination_class = TaskPagination
     filter_backends = (django_filters.DjangoFilterBackend, filters.OrderingFilter)
-    
-    def get_queryset(self):
-        project_slug = self.kwargs.get("slug")
-        project = Project.objects.get(slug=project_slug)
-        project_sections = ProjectSection.objects.filter(project=project)
-        
-        
 
-    """
     def get_queryset(self):
-        queryset = ProjectTask.objects.all()
         project_slug = self.kwargs.get("slug")
-        if project_slug:
-            queryset = queryset.filter(project__slug=project_slug)
-        responsible_ids = self.request.query_params.getlist("responsible")
-        release_ids = self.request.query_params.getlist("release")
-        section_ids = self.request.query_params.getlist("section")
-        if responsible_ids:
-            queryset = queryset.filter(responsible__id__in=responsible_ids)
-        if release_ids:
-            queryset = queryset.filter(release__id__in=release_ids)
-        if section_ids:
-            queryset = queryset.filter(section__id__in=section_ids)
-        return queryset
-    """
+        try:
+            project = Project.objects.get(slug=project_slug)
+        except Project.DoesNotExist:
+            return ProjectTask.objects.none()
+
+        project_sections = ProjectSection.objects.filter(project=project)
+        project_tasks = ProjectTask.objects.filter(section__in=project_sections)
+
+        return project_tasks
 
     def list(self, request, *args, **kwargs):
-        page = self.paginate_queryset(self.get_queryset())
-        serializer = self.get_serializer(page, many=True)
-        response_data = {
-            "page": int(request.query_params.get("page", 1)),
-            "perPage": int(request.query_params.get("perPage", 10)),
-            "count": self.get_queryset().count(),
-            "tasks": serializer.data,
-        }
-        return Response(response_data)
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response_data = self.paginator.get_paginated_response_data(serializer.data)
+            return Response(response_data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
