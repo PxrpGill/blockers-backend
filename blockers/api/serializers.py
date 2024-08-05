@@ -178,10 +178,9 @@ class TaskSerializer(serializers.ModelSerializer):
         )
 
     def get_status(self, obj):
-        # Retrieve the latest event and get its status
         latest_event = obj.projecttaskevent_set.order_by("-created_at").first()
         if latest_event:
-            return StatusSerializer(latest_event.status).data
+            return latest_event.status.id
         return None
 
     def get_events(self, obj):

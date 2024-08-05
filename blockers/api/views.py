@@ -85,17 +85,13 @@ class ProjectDetailViewSet(viewsets.ModelViewSet):
 
 
 class TaskPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = "perPage"
-    max_page_size = 100
 
     def get_paginated_response_data(self, data):
-        return {
-            "page": self.page.number,
-            "perPage": self.page.paginator.per_page,
-            "count": self.page.paginator.count,
-            "tasks": data,
-        }
+        return Response(
+            {
+                "items": data,
+            }
+        )
 
 
 class TaskViewSet(viewsets.ModelViewSet):
