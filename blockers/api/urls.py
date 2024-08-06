@@ -13,7 +13,7 @@ urlpatterns = [
         name="project-detail",
     ),
     path(
-        "projects/<slug:slug>/tasks/",
+        "projects/<slug:slug>/events/",
         TaskViewSet.as_view({"get": "list"}),
         name="project-tasks",
     ),

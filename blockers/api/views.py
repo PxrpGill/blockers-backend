@@ -85,13 +85,8 @@ class ProjectDetailViewSet(viewsets.ModelViewSet):
 
 
 class TaskPagination(PageNumberPagination):
-
-    def get_paginated_response_data(self, data):
-        return Response(
-            {
-                "items": data,
-            }
-        )
+    def get_paginated_response(self, data):
+        return Response({"items": data})
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -108,7 +103,6 @@ class TaskViewSet(viewsets.ModelViewSet):
 
         project_sections = ProjectSection.objects.filter(project=project)
         project_tasks = ProjectTask.objects.filter(section__in=project_sections)
-
         return project_tasks
 
     def list(self, request, *args, **kwargs):
@@ -116,8 +110,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            response_data = self.paginator.get_paginated_response_data(serializer.data)
-            return Response(response_data)
+            return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response({"items": serializer.data})
